@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ListenFirebaseFirestore();
-        edt_id = findViewById(R.id.edt_id);
         edt_title = findViewById(R.id.edt_title);
         edt_content = findViewById(R.id.edt_content);
         edt_date = findViewById(R.id.edt_date);
@@ -81,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                 String content = edt_content.getText().toString();
                 String date = edt_date.getText().toString();
                 String type = edt_type.getText().toString();
-                String id = edt_id.getText().toString();
+                String id = UUID.randomUUID().toString();
 
                 ToDo toDo = new ToDo(id, title, content, date, type, 0);
 
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 database.collection("TODO").document().set(mapTodo).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
+                        list = getListToDo();
                         Toast.makeText(context, "Thêm thành công", Toast.LENGTH_SHORT).show();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
