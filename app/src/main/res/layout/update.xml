@@ -9,19 +9,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="ID: "
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <EditText
-        android:id="@+id/edtId"
-        android:layout_width="match_parent"
-        android:layout_height="40dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:text="Title: "
         android:textSize="18sp"
         android:textStyle="bold" />

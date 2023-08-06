@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ListenFirebaseFirestore();
         edt_id = findViewById(R.id.edt_id);
         edt_title = findViewById(R.id.edt_title);
         edt_content = findViewById(R.id.edt_content);
@@ -53,12 +55,25 @@ public class MainActivity extends AppCompatActivity {
         rv_list = findViewById(R.id.rv_list);
         FirebaseApp.initializeApp(this);
         list = getListToDo();
-        adapter = new Adapter(this, list);
+        adapter = new Adapter(this, list, this);
+
         rv_list.setAdapter(adapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         rv_list.setLayoutManager(layoutManager);
 
+        edt_type.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String[] mucDoCV = {"Dễ", "Bình thường", "Khó"};
+                new android.app.AlertDialog.Builder(context).setTitle("Chọn mức độ công việc").setItems(mucDoCV, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        edt_type.setText(mucDoCV[which]);
+                    }
+                }).show();
+            }
+        });
         btn_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,37 +98,8 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(context, "Thêm thất bại", Toast.LENGTH_SHORT).show();
                     }
                 });
-                adapter.notifyDataSetChanged();
             }
         });
-    }
-
-    public ArrayList<ToDo> getListToDo() {
-        database.collection("TODO")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            QuerySnapshot querySnapshot = task.getResult();
-                            for (QueryDocumentSnapshot document : querySnapshot) {
-                                Log.d("TAG", document.getId() + " => " + document.getData());
-                                ToDo toDo = new ToDo(
-                                        document.getId(),
-                                        document.getString("title"),
-                                        document.getString("content"),
-                                        document.getString("date"),
-                                        document.getString("type"),
-                                        document.getLong("status").intValue());
-                                list.add(toDo);
-                            }
-                            adapter.notifyDataSetChanged();
-                        } else {
-                            Log.d("TAG", "Error getting documents: " + task.getException());
-                        }
-                    }
-                });
-        return list;
     }
 
     public void ListenFirebaseFirestore() {
@@ -153,5 +139,34 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    public ArrayList<ToDo> getListToDo() {
+        database.collection("TODO")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            list.clear();
+                            QuerySnapshot querySnapshot = task.getResult();
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                Log.d("TAG", document.getId() + " => " + document.getData());
+                                ToDo toDo = new ToDo(
+                                        document.getId(),
+                                        document.getString("title"),
+                                        document.getString("content"),
+                                        document.getString("date"),
+                                        document.getString("type"),
+                                        document.getLong("status").intValue());
+                                list.add(toDo);
+                            }
+                            adapter.notifyDataSetChanged();
+                        } else {
+                            Log.d("TAG", "Error getting documents: " + task.getException());
+                        }
+                    }
+                });
+        return list;
     }
 }
