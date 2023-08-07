@@ -53,9 +53,8 @@ public class MainActivity extends AppCompatActivity {
         btn_add = findViewById(R.id.btn_add);
         rv_list = findViewById(R.id.rv_list);
         FirebaseApp.initializeApp(this);
-        list = getListToDo();
-        adapter = new Adapter(this, list, this);
-
+        adapter = new Adapter(this, list);
+        list = adapter.getListToDo();
         rv_list.setAdapter(adapter);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 database.collection("TODO").document().set(mapTodo).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        list = getListToDo();
+                        list = adapter.getListToDo();
                         Toast.makeText(context, "Thêm thành công", Toast.LENGTH_SHORT).show();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -127,8 +126,8 @@ public class MainActivity extends AppCompatActivity {
                                     list.remove(dc.getOldIndex());
                                     list.add(update);
                                     adapter.notifyItemMoved(dc.getOldIndex(), dc.getNewIndex());
-                                    break;
                                 }
+                                break;
                             case REMOVED:
                                 dc.getDocument().toObject(ToDo.class);
                                 list.remove(dc.getOldIndex());
@@ -139,34 +138,5 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    public ArrayList<ToDo> getListToDo() {
-        database.collection("TODO")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            list.clear();
-                            QuerySnapshot querySnapshot = task.getResult();
-                            for (QueryDocumentSnapshot document : querySnapshot) {
-                                Log.d("TAG", document.getId() + " => " + document.getData());
-                                ToDo toDo = new ToDo(
-                                        document.getId(),
-                                        document.getString("title"),
-                                        document.getString("content"),
-                                        document.getString("date"),
-                                        document.getString("type"),
-                                        document.getLong("status").intValue());
-                                list.add(toDo);
-                            }
-                            adapter.notifyDataSetChanged();
-                        } else {
-                            Log.d("TAG", "Error getting documents: " + task.getException());
-                        }
-                    }
-                });
-        return list;
     }
 }

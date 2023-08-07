@@ -32,13 +32,11 @@ public class Adapter extends RecyclerView.Adapter<ViewHolder> {
     private Context context;
     private ArrayList<ToDo> list;
     private FirebaseFirestore database;
-    MainActivity mainActivity;
 
-    public Adapter(Context context, ArrayList<ToDo> list, MainActivity mainActivity) {
+    public Adapter(Context context, ArrayList<ToDo> list) {
         this.context = context;
         this.list = list;
         database = FirebaseFirestore.getInstance();
-        this.mainActivity = mainActivity;
     }
 
 
@@ -109,7 +107,7 @@ public class Adapter extends RecyclerView.Adapter<ViewHolder> {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
-                                list = mainActivity.getListToDo();
+                                notifyItemChanged(holder.getAdapterPosition());
                                 Toast.makeText(context, "Cập nhật status thành công", Toast.LENGTH_SHORT).show();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -167,7 +165,7 @@ public class Adapter extends RecyclerView.Adapter<ViewHolder> {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
-                                list = mainActivity.getListToDo();
+                                notifyDataSetChanged();
                                 Toast.makeText(context, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -186,5 +184,34 @@ public class Adapter extends RecyclerView.Adapter<ViewHolder> {
             }
         });
         dialog.show();
+    }
+
+    public ArrayList<ToDo> getListToDo() {
+        database.collection("TODO")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            list.clear();
+                            QuerySnapshot querySnapshot = task.getResult();
+                            for (QueryDocumentSnapshot document : querySnapshot) {
+                                Log.d("TAG", document.getId() + " => " + document.getData());
+                                ToDo toDo = new ToDo(
+                                        document.getId(),
+                                        document.getString("title"),
+                                        document.getString("content"),
+                                        document.getString("date"),
+                                        document.getString("type"),
+                                        document.getLong("status").intValue());
+                                list.add(toDo);
+                            }
+                            notifyDataSetChanged();
+                        } else {
+                            Log.d("TAG", "Error getting documents: " + task.getException());
+                        }
+                    }
+                });
+        return list;
     }
 }
