@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-    EditText edt_id, edt_title, edt_content, edt_date, edt_type;
+    EditText edt_title, edt_content, edt_date, edt_type;
     Button btn_add;
     RecyclerView rv_list;
     Adapter adapter;
@@ -52,11 +52,11 @@ public class MainActivity extends AppCompatActivity {
         edt_type = findViewById(R.id.edt_type);
         btn_add = findViewById(R.id.btn_add);
         rv_list = findViewById(R.id.rv_list);
-        FirebaseApp.initializeApp(this);
-        adapter = new Adapter(this, list);
+        FirebaseApp.initializeApp(context);
+        adapter = new Adapter(context, list);
         list = adapter.getListToDo();
         rv_list.setAdapter(adapter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         rv_list.setLayoutManager(layoutManager);
 
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
                 HashMap<String, Object> mapTodo = toDo.convertHashMap();
 
-                database.collection("TODO").document().set(mapTodo).addOnSuccessListener(new OnSuccessListener<Void>() {
+                database.collection("TODO").document(toDo.getId()).set(mapTodo).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
                         list = adapter.getListToDo();

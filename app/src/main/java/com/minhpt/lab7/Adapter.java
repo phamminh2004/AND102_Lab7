@@ -107,7 +107,7 @@ public class Adapter extends RecyclerView.Adapter<ViewHolder> {
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void unused) {
-                                notifyItemChanged(holder.getAdapterPosition());
+                                notifyDataSetChanged();
                                 Toast.makeText(context, "Cập nhật status thành công", Toast.LENGTH_SHORT).show();
                             }
                         }).addOnFailureListener(new OnFailureListener() {
@@ -192,8 +192,8 @@ public class Adapter extends RecyclerView.Adapter<ViewHolder> {
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        list.clear();
                         if (task.isSuccessful()) {
-                            list.clear();
                             QuerySnapshot querySnapshot = task.getResult();
                             for (QueryDocumentSnapshot document : querySnapshot) {
                                 Log.d("TAG", document.getId() + " => " + document.getData());
